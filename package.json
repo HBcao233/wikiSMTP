@@ -1,0 +1,83 @@
+{
+	"name": "wikismtp",
+	"displayName": "wikiSMTP",
+	"description": "mediawiki自动下载与上传",
+	"version": "0.0.1",
+	"publisher": "HBcao",
+	"repository": "https://github.com/HBcao233/wikiSMTP",
+	"engines": {
+		"vscode": "^1.83.0"
+	},
+	"categories": [
+		"Other"
+	],
+	"activationEvents": [],
+	"main": "./out/extension.js",
+	"contributes": {
+		"commands": [
+			{
+				"command": "wikismtp.config",
+				"title": "配置",
+				"category": "wikiSMTP"
+			},
+			{
+				"command": "wikismtp.download",
+				"title": "1 下载 From wiki",
+				"category": "wikiSMTP"
+			},
+			{
+				"command": "wikismtp.upload",
+				"title": "2 上传 To wiki",
+				"category": "wikiSMTP"
+			}
+		],
+		"menus": {
+			"explorer/context": [
+				{
+					"command": "wikismtp.download",
+					"group": "1_modification",
+					"when": "resourceLangId == wikitext || resourceLangId == lua"
+				},
+				{
+					"command": "wikismtp.upload",
+					"group": "1_modification",
+					"when": "resourceLangId == wikitext || resourceLangId == lua"
+				}
+			],
+			"editor/context": [
+				{
+					"command": "wikismtp.download",
+					"group": "1_modification",
+					"when": "resourceLangId == wikitext || resourceLangId == lua"
+				},
+				{
+					"command": "wikismtp.upload",
+					"group": "1_modification",
+					"when": "resourceLangId == wikitext || resourceLangId == lua"
+				}
+			]
+		}
+	},
+	"scripts": {
+		"vscode:prepublish": "npm run compile",
+		"compile": "tsc -p ./",
+		"watch": "tsc -watch -p ./",
+		"lint": "eslint \"src/**/*.ts\""
+	},
+	"devDependencies": {
+		"@types/mocha": "^10.0.2",
+		"@types/node": "18.x",
+		"@types/vscode": "^1.83.0",
+		"@typescript-eslint/eslint-plugin": "^6.7.3",
+		"@typescript-eslint/parser": "^6.7.3",
+		"@vscode/test-electron": "^2.3.4",
+		"eslint": "^8.50.0",
+		"glob": "^10.3.3",
+		"mocha": "^10.2.0",
+		"typescript": "^5.2.2"
+	},
+	"dependencies": {
+		"axios": "^1.5.1",
+		"request": "^2.88.2"
+	}
+}
