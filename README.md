@@ -2,6 +2,7 @@
 <a href="https://github.com/HBcao233/wikiSMTP/blob/main/LICENSE">
   <img src="https://img.shields.io/github/license/HBcao233/wikiSMTP" alt="license">
 </a>
+
 ## 功能
 
 mediawiki的下载和上传
