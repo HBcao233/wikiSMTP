@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { BufferBigEndian } from './str';
 import { MediaWiki } from './mediawiki';
-import { isEmpty, showError, raise, showInfo, showWarning } from './util';
+import { isEmpty, showError, raise, showInfo, showWarning, openLocalFile } from './util';
 
 export interface WikiSMTPConfig {
   host: string,
@@ -32,7 +32,7 @@ export class Wiki {
   public static encode(s: string) {
     return s.replace('\\', '_0_')
       .replace('/', '_1_')
-      .replace(':', '_2_')
+      .replace(':', '_')
       .replace('*', '_3_')
       .replace('"', '_4_');
   }
@@ -50,11 +50,11 @@ export class Wiki {
       buf.pushStringWithUtf8(content);
       vscode.workspace.fs.writeFile(Wiki.configFile, buf.toUint8Array())
         .then(() => {
-          Wiki.openLocalFile(Wiki.configFile);
+          openLocalFile(Wiki.configFile);
         });
       return;
     }
-    Wiki.openLocalFile(Wiki.configFile);
+    openLocalFile(Wiki.configFile);
   }
 
   public static download(filePath: string) {
@@ -70,6 +70,10 @@ export class Wiki {
       await page.initialize();
       let page_text = await page.text();
       // console.log(page_text);
+      if (page_text === '') {
+        showInfo(`页面 "${page.name}" 在wiki不存在`)
+        return;
+      }
 
       let doc = vscode.workspace.textDocuments[0];
       if (doc.uri.fsPath !== filePath) {
@@ -82,16 +86,20 @@ export class Wiki {
           });
         if (a) { doc = a; }
       }
-
-      // let editor = vscode.window.activeTextEditor;
-      let last_line = doc.lineAt(doc.lineCount - 1);
-      let r = new vscode.Range(0, 0, doc.lineCount - 1, last_line.text.length);
-      let workspaceEdit = new vscode.WorkspaceEdit();
-      workspaceEdit.set(doc.uri, [
-        vscode.TextEdit.delete(r),
-        vscode.TextEdit.insert(new vscode.Position(0, 0), page_text),
-      ])
-      vscode.workspace.applyEdit(workspaceEdit);
+      if (doc.getText() == page_text) {
+        showInfo('当前内容与wiki的一致');
+      } else {
+        // let editor = vscode.window.activeTextEditor;
+        let last_line = doc.lineAt(doc.lineCount - 1);
+        let r = new vscode.Range(0, 0, doc.lineCount - 1, last_line.text.length);
+        let workspaceEdit = new vscode.WorkspaceEdit();
+        workspaceEdit.set(doc.uri, [
+          vscode.TextEdit.delete(r),
+          vscode.TextEdit.insert(new vscode.Position(0, 0), page_text),
+        ])
+        vscode.workspace.applyEdit(workspaceEdit);
+        showInfo(`页面 "${page.name}" 下载成功`);
+      }
     }, 1);
   }
 
@@ -102,7 +110,7 @@ export class Wiki {
       return;
     }
     if (isEmpty(Wiki.config.bot!.username || '') || isEmpty(Wiki.config.bot!.password || '')) {
-      showError('wiki配置错误: bot.username 项和 bot.password 项不能为空', '配置', Wiki.configWiki);
+      showError('wikiSMTP配置错误: 需要 bot.username 和 bot.password 项', '配置', Wiki.configWiki);
       return false;
     }
 
@@ -113,7 +121,7 @@ export class Wiki {
       }
       doc.save();
 
-      let mw = new MediaWiki(this.config);
+      let mw = new MediaWiki(Wiki.config);
       await mw.site_init();
       let page = mw.getPage(pathname);
       await page.initialize();
@@ -129,7 +137,58 @@ export class Wiki {
     }, 1);
   }
 
-  private static checkConfig(): boolean {
+  // 下载至当前文件夹
+  public static downloadToDir(pathName: string) {
+    if (!Wiki.checkConfig()) {
+      return;
+    }
+
+    let stat = fs.lstatSync(pathName);
+    if (stat.isFile()) {
+      pathName = path.dirname(pathName);
+    }
+    var pathUri = vscode.Uri.parse(pathName);
+    console.log(pathUri);
+
+    vscode.window.showInputBox({
+      password: false,
+      ignoreFocusOut: true, // 默认false，设置为true时鼠标点击别的地方输入框不会消失
+      placeHolder: '请输入页面名 (无需转义)', // 在输入框内的提示信息
+      prompt: 'Enter 确定, ESC 取消', // 在输入框下方的提示信息
+    }).then(async function (pagename) {
+      pagename = String(pagename);
+      if (isEmpty(pagename)) {
+        return showWarning('输入为空, 已取消');
+      }
+
+      let filename = Wiki.encode(pagename);
+      let ext = 'wiki';
+
+      let mw = new MediaWiki(Wiki.config);
+      await mw.site_init();
+      let page = mw.getPage(pagename);
+      await page.initialize();
+      if (!page.exists) {
+        showWarning(`页面 "${page.name}" 不存在`);
+      }
+      let page_text = await page.text();
+      if (page.namespace == 828 || page.contentmodel == 'Scribunto') {
+        ext = 'lua';
+      }
+
+      let buf = new BufferBigEndian();
+      buf.pushStringWithUtf8(page_text);
+
+      let filePath = path.join(pathName, filename + '.' + ext);
+      let fileUri: vscode.Uri = vscode.Uri.file(filePath);
+      vscode.workspace.fs.writeFile(fileUri, buf.toUint8Array())
+        .then(() => {
+          openLocalFile(fileUri);
+        });
+    });
+  }
+
+  public static checkConfig(): boolean {
     if (!Wiki.checkWorkspace()) {
       return false;
     }
@@ -140,26 +199,11 @@ export class Wiki {
     let r = fs.readFileSync(Wiki.configFile.fsPath);
     let res: WikiSMTPConfig = JSON.parse(r.toString());
     if (isEmpty(res.host)) {
-      showError('wiki配置错误: host项不能为空', '配置', Wiki.configWiki);
+      showError('wikiSMTP配置错误: host项不能为空', '配置', Wiki.configWiki);
       return false;
     }
     Wiki.config = res;
     return true;
-  }
-
-  private static openLocalFile(filePath: vscode.Uri | string) {
-    if (filePath instanceof vscode.Uri) {
-      filePath = filePath.fsPath;
-    }
-    vscode.workspace.openTextDocument(filePath)
-      .then(doc => {
-        vscode.window.showTextDocument(doc);
-      }, err => {
-        console.log(`打开 ${filePath} 失败, ${err}.`);
-      }).then(undefined, err => {
-        console.log(`打开 ${filePath} 失败, ${err}.`);
-      });
-    return;
   }
 
   private static checkWorkspace(): boolean {

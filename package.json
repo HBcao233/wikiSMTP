@@ -2,7 +2,7 @@
 	"name": "wikismtp",
 	"displayName": "wikiSMTP",
 	"description": "mediawiki自动下载与上传",
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"publisher": "HBcao",
 	"repository": "https://github.com/HBcao233/wikiSMTP",
 	"engines": {
@@ -11,7 +11,9 @@
 	"categories": [
 		"Other"
 	],
-	"activationEvents": [],
+	"activationEvents": [
+		"onLanguage:json"
+	],
 	"main": "./out/extension.js",
 	"contributes": {
 		"commands": [
@@ -29,9 +31,28 @@
 				"command": "wikismtp.upload",
 				"title": "2 上传 To wiki",
 				"category": "wikiSMTP"
+			},
+			{
+				"command": "wikismtp.downoladToDir",
+				"title": "3 下载页面到当前文件夹 From wiki",
+				"category": "wikiSMTP"
 			}
 		],
 		"menus": {
+			"commandPalette": [
+				{
+					"command": "wikismtp.download",
+					"when": "resourceLangId == wikitext || resourceLangId == lua"
+				},
+				{
+					"command": "wikismtp.upload",
+					"when": "resourceLangId == wikitext || resourceLangId == lua"
+				},
+				{
+					"command": "wikismtp.downoladToDir",
+					"when": "false"
+				}
+			],
 			"explorer/context": [
 				{
 					"command": "wikismtp.download",
@@ -42,6 +63,10 @@
 					"command": "wikismtp.upload",
 					"group": "1_modification",
 					"when": "resourceLangId == wikitext || resourceLangId == lua"
+				},
+				{
+					"command": "wikismtp.downoladToDir",
+					"group": "1_modification"
 				}
 			],
 			"editor/context": [

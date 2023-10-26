@@ -33,6 +33,21 @@ export function http_build_query(obj: dict): string {
   return res;
 }
 
+export function openLocalFile(filePath: vscode.Uri | string) {
+  if (filePath instanceof vscode.Uri) {
+    filePath = filePath.fsPath;
+  }
+  vscode.workspace.openTextDocument(filePath)
+    .then(doc => {
+      vscode.window.showTextDocument(doc);
+    }, err => {
+      console.log(`打开 ${filePath} 失败, ${err}.`);
+    }).then(undefined, err => {
+      console.log(`打开 ${filePath} 失败, ${err}.`);
+    });
+  return;
+}
+
 export function showInfo(str1: string, str2?: string, func?: Function) {
   vscode.window.showInformationMessage(str1, str2 || '')
     .then(async r => {

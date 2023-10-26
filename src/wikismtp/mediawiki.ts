@@ -133,6 +133,7 @@ export class MediaWiki {
       this.base_title = this.page_title.split('/')[0];
       this.base_name = String(this.name).split('/')[0]
 
+      // console.log(info);
       this.exists = !('missing' in info);
       this.redirect = 'redirect' in info;
 
@@ -188,7 +189,6 @@ export class MediaWiki {
 
     public async edit(text: string) {
       if (!this.site.logged_in) {
-        console.log(this.site.logged_in)
         raise('未登录');
       }
       if (!this.can('edit')) {
@@ -361,7 +361,7 @@ export class MediaWiki {
       });
     }
 
-    const url = 'https://' + this.host + '/w/' + script + '.php';
+    const url = 'https://' + this.host + '/' + script + '.php';
     return await requests.request({
       url: url,
       method: http_method,

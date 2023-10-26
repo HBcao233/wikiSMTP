@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { Wiki } from './wikismtp/index';
-import { showInfo, showWarning, showError } from './wikismtp/util';
+import { showInfo, showWarning, showError, dict, raise } from './wikismtp/util';
+import * as path from 'path';
 
 export function activate(context: vscode.ExtensionContext) {
 	const configCommand = vscode.commands.registerCommand(
@@ -31,8 +32,27 @@ export function activate(context: vscode.ExtensionContext) {
 	);
 	context.subscriptions.push(uploadCommand);
 
-	vscode.workspace.onDidSaveTextDocument((document: vscode.TextDocument) => {
-		console.log('onsave');
-		console.log(document);
+	const downloadToDirCommand = vscode.commands.registerCommand(
+		'wikismtp.downoladToDir',
+		(uri: vscode.Uri) => {
+			if (uri && uri.fsPath) {
+				Wiki.downloadToDir(uri.fsPath);
+			}
+		}
+	);
+	context.subscriptions.push(downloadToDirCommand);
+
+	vscode.workspace.onDidSaveTextDocument((doc: vscode.TextDocument) => {
+		if (path.basename(doc.fileName) !== 'wikismtp.json') {
+			return;
+		}
+
+		let res: dict = {};
+		try {
+			res = JSON.parse(doc.getText());
+		} catch (e) {
+			raise('wikiSMTP配置错误: 请输入正确的JSON');
+		}
+		Wiki.checkConfig();
 	});
 }

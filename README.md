@@ -1,4 +1,7 @@
 # wikiSMTP README
+<a href="https://github.com/HBcao233/wikiSMTP/blob/main/LICENSE">
+  <img src="https://img.shields.io/github/license/HBcao233/wikiSMTP" alt="license">
+</a>
 ## 功能
 
 mediawiki的下载和上传
@@ -30,11 +33,15 @@ mediawiki的下载和上传
 ## 使用方法
 本插件包含下载和上传两个功能，有以下特色：
 * 以文件名作为页面名，由于文件名不能包含一些特殊符号，会对以下字符进行转义
-  * `_`  => `:` <i>优先级低于下面几项</i>
-  * `_0_`=> `\`
-  * `_1_`=> `/`
-  * `_2_`=> `:`
-  * `_3_`=> `*`
-  * `_4_`=> `"`
+  | 特殊字符 | 转义         |
+  | -------- | ------------ |
+  | `:`      | `_` 或 `_2_` |
+  | `\`      | `_0_`        |
+  | `/`      | `_1_`        |
+  | `*`      | `_3_`        |
+  | `"`      | `_4_`        |
+  
+* 配置好后在编辑器中右键，或右键文件、文件夹即可使用下载、上传功能
 * 上传时将使用 `/* Edit ${页面名} by VSCode wikiSMTP Extensions */ ` 作为编辑摘要
 * 需要使用上传功能请配置 `bot.username` 项和 `bot.password`项
+* `3 下载页面到当前文件夹 From wiki` 会要求输入页面名，页面名无需转义
