@@ -361,7 +361,7 @@ export class MediaWiki {
       });
     }
 
-    const url = 'https://' + this.host + '/' + script + '.php';
+    const url = 'https://' + this.host + '/' + script + '.php?v=' + (new Date().getTime());
     return await requests.request({
       url: url,
       method: http_method,

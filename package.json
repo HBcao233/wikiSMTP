@@ -2,7 +2,7 @@
 	"name": "wikismtp",
 	"displayName": "wikiSMTP",
 	"description": "mediawiki自动下载与上传",
-	"version": "0.0.2",
+	"version": "0.0.3",
 	"publisher": "HBcao",
 	"repository": "https://github.com/HBcao233/wikiSMTP",
 	"engines": {
@@ -36,6 +36,11 @@
 				"command": "wikismtp.downoladToDir",
 				"title": "3 下载页面到当前文件夹 From wiki",
 				"category": "wikiSMTP"
+			},
+			{
+				"command": "wikismtp.openUrl",
+				"title": "4 打开当前wiki页面",
+				"category": "wikiSMTP"
 			}
 		],
 		"menus": {
@@ -67,6 +72,11 @@
 				{
 					"command": "wikismtp.downoladToDir",
 					"group": "1_modification"
+				},
+				{
+					"command": "wikismtp.openUrl",
+					"group": "1_modification",
+					"when": "resourceLangId == wikitext || resourceLangId == lua"
 				}
 			],
 			"editor/context": [
@@ -77,6 +87,11 @@
 				},
 				{
 					"command": "wikismtp.upload",
+					"group": "1_modification",
+					"when": "resourceLangId == wikitext || resourceLangId == lua"
+				},
+				{
+					"command": "wikismtp.openUrl",
 					"group": "1_modification",
 					"when": "resourceLangId == wikitext || resourceLangId == lua"
 				}
@@ -103,6 +118,7 @@
 	},
 	"dependencies": {
 		"axios": "^1.5.1",
-		"request": "^2.88.2"
+		"request": "^2.88.2",
+		"opn": "^5.3.0"
 	}
 }

@@ -42,6 +42,16 @@ export function activate(context: vscode.ExtensionContext) {
 	);
 	context.subscriptions.push(downloadToDirCommand);
 
+	const openUrlCommand = vscode.commands.registerCommand(
+		'wikismtp.openUrl',
+		(uri: vscode.Uri) => {
+			if (uri && uri.fsPath) {
+				Wiki.openUrl(uri.fsPath);
+			}
+		}
+	);
+	context.subscriptions.push(openUrlCommand);
+
 	vscode.workspace.onDidSaveTextDocument((doc: vscode.TextDocument) => {
 		if (path.basename(doc.fileName) !== 'wikismtp.json') {
 			return;

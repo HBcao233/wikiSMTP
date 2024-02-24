@@ -4,6 +4,7 @@ import * as path from 'path';
 import { BufferBigEndian } from './str';
 import { MediaWiki } from './mediawiki';
 import { isEmpty, showError, raise, showInfo, showWarning, openLocalFile } from './util';
+import browser from './browser';
 
 export interface WikiSMTPConfig {
   host: string,
@@ -186,6 +187,16 @@ export class Wiki {
           openLocalFile(fileUri);
         });
     });
+  }
+
+  // 打开当前wiki页面
+  public static openUrl(filePath: string) {
+    let pathname = path.parse(Wiki.decode(filePath)).name;
+    if (!Wiki.checkConfig()) {
+      return;
+    }
+
+    browser.open("https://" + Wiki.config.host + '/wiki/' + pathname, browser.standardizedBrowserName())
   }
 
   public static checkConfig(): boolean {
